@@ -4,22 +4,37 @@
 
 ---
 
+## 진행 로그
+
+| 날짜 | Phase | 작업 내용 | 상태 |
+|------|-------|----------|------|
+| 2026-03-01 | 1.1 | package.json 설정 (ESM, scripts, devDependencies) | ✅ |
+| 2026-03-01 | 1.1 | tsconfig.json (strict mode, ESM, incremental 제거) | ✅ |
+| 2026-03-01 | 1.1 | vitest.config.ts (globals, coverage 80%) | ✅ |
+| 2026-03-01 | 1.1 | .eslintrc.js + .prettierrc | ✅ |
+| 2026-03-01 | 1.1 | tsup.config.ts (ESM, DTS, sourcemap) | ✅ |
+| 2026-03-01 | 1.1 | .gitignore | ✅ |
+| 2026-03-01 | 1.1 | 디렉터리 구조 생성 (src/, tests/) | ✅ |
+| 2026-03-01 | 1.1 | src/core/types/ 공유 타입 정의 4종 | ✅ |
+
+---
+
 ## Phase 1: Foundation (2~3주)
 
 ### 1.1 프로젝트 Scaffolding
 
-- [ ] pnpm init + package.json 설정
-- [ ] TypeScript 설정 (tsconfig.json, strict mode)
-- [ ] Vitest 설정 (vitest.config.ts)
-- [ ] ESLint + Prettier 설정
-- [ ] tsup 빌드 설정
-- [ ] Oclif 초기 설정 + 빈 커맨드 확인
-- [ ] 디렉터리 구조 생성 (src/, tests/, .claude/)
-- [ ] 공유 타입 정의 (src/core/types/)
-  - [ ] Candle, Timeframe
-  - [ ] SMC 관련 타입 (SwingPoint, StructureBreak, etc.)
-  - [ ] Strategy, Signal 타입
-  - [ ] Backtest, Trade, RiskMetrics 타입
+- [x] pnpm init + package.json 설정
+- [x] TypeScript 설정 (tsconfig.json, strict mode)
+- [x] Vitest 설정 (vitest.config.ts)
+- [x] ESLint + Prettier 설정
+- [x] tsup 빌드 설정
+- [x] 디렉터리 구조 생성 (src/, tests/, .claude/)
+- [ ] Oclif 초기 설정 + 빈 커맨드 확인 → Phase 1.6으로 이동
+- [x] 공유 타입 정의 (src/core/types/)
+  - [x] Candle, Timeframe
+  - [x] SMC 관련 타입 (SwingPoint, StructureBreak, etc.)
+  - [x] Strategy, Signal 타입
+  - [x] Backtest, Trade, RiskMetrics 타입
 
 ### 1.2 데이터 모듈
 
@@ -75,8 +90,9 @@
 - [ ] 테스트: 구조 변경 없는 횡보 구간
 - [ ] 테스트: 연속 BOS 시 방향 유지 확인
 
-### 1.6 기본 CLI `analyze` 커맨드
+### 1.6 Oclif 설정 + 기본 CLI `analyze` 커맨드
 
+- [ ] Oclif 초기 설정 + 빈 커맨드 확인 (1.1에서 이동)
 - [ ] `trade analyze --pair --tf` 커맨드 구현
   - [ ] 페어/타임프레임 인자 파싱
   - [ ] 데이터 fetch → swing → structure 파이프라인
