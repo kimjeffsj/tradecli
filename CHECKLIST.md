@@ -6,16 +6,20 @@
 
 ## 진행 로그
 
-| 날짜 | Phase | 작업 내용 | 상태 |
-|------|-------|----------|------|
-| 2026-03-01 | 1.1 | package.json 설정 (ESM, scripts, devDependencies) | ✅ |
-| 2026-03-01 | 1.1 | tsconfig.json (strict mode, ESM, incremental 제거) | ✅ |
-| 2026-03-01 | 1.1 | vitest.config.ts (globals, coverage 80%) | ✅ |
-| 2026-03-01 | 1.1 | .eslintrc.js + .prettierrc | ✅ |
-| 2026-03-01 | 1.1 | tsup.config.ts (ESM, DTS, sourcemap) | ✅ |
-| 2026-03-01 | 1.1 | .gitignore | ✅ |
-| 2026-03-01 | 1.1 | 디렉터리 구조 생성 (src/, tests/) | ✅ |
-| 2026-03-01 | 1.1 | src/core/types/ 공유 타입 정의 4종 | ✅ |
+| 날짜       | Phase | 작업 내용                                               | 상태 |
+| ---------- | ----- | ------------------------------------------------------- | ---- |
+| 2026-03-01 | 1.1   | package.json 설정 (ESM, scripts, devDependencies)       | ✅   |
+| 2026-03-01 | 1.1   | tsconfig.json (strict mode, ESM, incremental 제거)      | ✅   |
+| 2026-03-01 | 1.1   | vitest.config.ts (globals, coverage 80%)                | ✅   |
+| 2026-03-01 | 1.1   | .eslintrc.js + .prettierrc                              | ✅   |
+| 2026-03-01 | 1.1   | tsup.config.ts (ESM, DTS, sourcemap)                    | ✅   |
+| 2026-03-01 | 1.1   | .gitignore                                              | ✅   |
+| 2026-03-01 | 1.1   | 디렉터리 구조 생성 (src/, tests/)                       | ✅   |
+| 2026-03-01 | 1.1   | src/core/types/ 공유 타입 정의 4종                      | ✅   |
+| 2026-03-01 | 1.2   | DataAdapter 인터페이스 + FetchOptions + DataFetchError  | ✅   |
+| 2026-03-01 | 1.2   | MockDataAdapter 구현체                                  | ✅   |
+| 2026-03-01 | 1.2   | tests/fixtures/helpers.ts (createCandles, createCandle) | ✅   |
+| 2026-03-01 | 1.2   | tests/core/data/adapter.test.ts (7 tests passed)        | ✅   |
 
 ---
 
@@ -38,16 +42,16 @@
 
 ### 1.2 데이터 모듈
 
-- [ ] DataAdapter 인터페이스 정의
-- [ ] FetchOptions 타입 정의
-- [ ] 첫 DataAdapter 구현체 (TwelveData 또는 mock)
-  - [ ] fetchCandles() 구현
-  - [ ] getSupportedPairs() 구현
-  - [ ] getSupportedTimeframes() 구현
-  - [ ] API 에러 처리 (rate limit, timeout)
-- [ ] 테스트: 어댑터 인터페이스 준수 확인
-- [ ] 테스트: API 응답 파싱 검증
-- [ ] 테스트: 에러 시나리오 (network, rate limit)
+- [x] DataAdapter 인터페이스 정의
+- [x] FetchOptions 타입 정의
+- [x] 첫 DataAdapter 구현체 (Mock)
+  - [x] fetchCandles() 구현
+  - [x] getSupportedPairs() 구현
+  - [x] getSupportedTimeframes() 구현
+  - [x] API 에러 처리 (DataFetchError)
+- [x] 테스트: 어댑터 인터페이스 준수 확인
+- [x] 테스트: API 응답 파싱 검증
+- [x] 테스트: 에러 시나리오 (network, rate limit)
 
 ### 1.3 로컬 캐시
 

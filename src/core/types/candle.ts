@@ -5,7 +5,7 @@ export interface Candle {
   low: number;
   close: number;
   // 0이면 빈 캔들 (거래 없음) → 처리 로직 필요
-  volumne: number;
+  volume: number;
 }
 
 // 지원 타임프레임 — string literal union 사용
