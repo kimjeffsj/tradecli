@@ -20,6 +20,10 @@
 | 2026-03-01 | 1.2   | MockDataAdapter 구현체                                  | ✅   |
 | 2026-03-01 | 1.2   | tests/fixtures/helpers.ts (createCandles, createCandle) | ✅   |
 | 2026-03-01 | 1.2   | tests/core/data/adapter.test.ts (7 tests passed)        | ✅   |
+| 2026-03-03 | 1.3   | CacheEntry, CacheOptions 타입 정의                      | ✅   |
+| 2026-03-03 | 1.3   | FileCache 구현 (get/set/clear, TTL, 키 생성)            | ✅   |
+| 2026-03-03 | 1.3   | CachedDataAdapter 구현 (DataAdapter 데코레이터)         | ✅   |
+| 2026-03-03 | 1.3   | tests/core/data/cache.test.ts (10 tests passed)         | ✅   |
 
 ---
 
@@ -55,15 +59,15 @@
 
 ### 1.3 로컬 캐시
 
-- [ ] CacheEntry 타입 정의
-- [ ] 파일 기반 캐시 구현
-  - [ ] 캐시 키 생성 (pair:tf:start:end)
-  - [ ] TTL 기반 만료 처리
-  - [ ] 캐시 hit/miss 로직
-  - [ ] 캐시 클리어 기능
-- [ ] 테스트: 캐시 hit 시나리오
-- [ ] 테스트: 캐시 miss 시나리오
-- [ ] 테스트: TTL 만료 시나리오
+- [x] CacheEntry 타입 정의
+- [x] 파일 기반 캐시 구현
+  - [x] 캐시 키 생성 (pair:tf:start:end)
+  - [x] TTL 기반 만료 처리
+  - [x] 캐시 hit/miss 로직
+  - [x] 캐시 클리어 기능
+- [x] 테스트: 캐시 hit 시나리오
+- [x] 테스트: 캐시 miss 시나리오
+- [x] 테스트: TTL 만료 시나리오
 
 ### 1.4 Swing Detection
 

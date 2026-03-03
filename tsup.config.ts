@@ -7,5 +7,5 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   noExternal: [],
-  tsconfig: 'tsconfig.json',
+  tsconfig: 'tsconfig.build.json',
 });
