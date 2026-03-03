@@ -24,6 +24,8 @@
 | 2026-03-03 | 1.3   | FileCache 구현 (get/set/clear, TTL, 키 생성)            | ✅   |
 | 2026-03-03 | 1.3   | CachedDataAdapter 구현 (DataAdapter 데코레이터)         | ✅   |
 | 2026-03-03 | 1.3   | tests/core/data/cache.test.ts (10 tests passed)         | ✅   |
+| 2026-03-03 | 1.4   | detectSwingPoints() 구현 (SWING_HIGH/LOW, lookback)     | ✅   |
+| 2026-03-03 | 1.4   | tests/core/smc/swing.test.ts (전체 통과)                | ✅   |
 
 ---
 
@@ -71,17 +73,16 @@
 
 ### 1.4 Swing Detection
 
-- [ ] detectSwingPoints() 함수 구현
-  - [ ] Lookback window 기반 로컬 최대값 탐지 (SWING_HIGH)
-  - [ ] Lookback window 기반 로컬 최소값 탐지 (SWING_LOW)
-  - [ ] 설정 가능한 lookback 파라미터 (기본값: 5)
-  - [ ] SwingPoint ID 생성
-- [ ] 테스트: 명확한 swing high 감지
-- [ ] 테스트: 명확한 swing low 감지
-- [ ] 테스트: 동일 가격 연속 시 처리
-- [ ] 테스트: lookback window 변경 시 결과 변화
-- [ ] 테스트: 데이터 부족 시 빈 배열 반환
-- [ ] 테스트: 엣지 케이스 (캔들 수 < lookback)
+- [x] detectSwingPoints() 함수 구현
+  - [x] Lookback window 기반 로컬 최대값 탐지 (SWING_HIGH)
+  - [x] Lookback window 기반 로컬 최소값 탐지 (SWING_LOW)
+  - [x] 설정 가능한 lookback 파라미터 (기본값: 5)
+- [x] 테스트: 명확한 swing high 감지
+- [x] 테스트: 명확한 swing low 감지
+- [x] 테스트: 동일 가격 연속 시 처리
+- [x] 테스트: lookback window 변경 시 결과 변화
+- [x] 테스트: 데이터 부족 시 빈 배열 반환
+- [x] 테스트: 엣지 케이스 (캔들 수 < lookback)
 
 ### 1.5 BOS / CHoCH Detection
 
