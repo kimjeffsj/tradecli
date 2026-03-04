@@ -26,6 +26,8 @@
 | 2026-03-03 | 1.3   | tests/core/data/cache.test.ts (10 tests passed)         | ✅   |
 | 2026-03-03 | 1.4   | detectSwingPoints() 구현 (SWING_HIGH/LOW, lookback)     | ✅   |
 | 2026-03-03 | 1.4   | tests/core/smc/swing.test.ts (전체 통과)                | ✅   |
+| 2026-03-04 | 1.5   | analyzeStructure() 구현 (BOS/CHoCH, direction 추적)    | ✅   |
+| 2026-03-04 | 1.5   | tests/core/smc/structure.test.ts (6 tests passed)       | ✅   |
 
 ---
 
@@ -86,18 +88,18 @@
 
 ### 1.5 BOS / CHoCH Detection
 
-- [ ] analyzeStructure() 함수 구현
-  - [ ] 이전 swing high 돌파 감지 (close 기준)
-  - [ ] 이전 swing low 돌파 감지 (close 기준)
-  - [ ] BOS 판단 (추세 유지 방향 돌파)
-  - [ ] CHoCH 판단 (추세 변경 방향 돌파)
-  - [ ] 현재 시장 방향(direction) 상태 추적
-- [ ] 테스트: 상승 추세에서 BOS 감지 (higher high)
-- [ ] 테스트: 하락 추세에서 BOS 감지 (lower low)
-- [ ] 테스트: 상승→하락 CHoCH 감지
-- [ ] 테스트: 하락→상승 CHoCH 감지
-- [ ] 테스트: 구조 변경 없는 횡보 구간
-- [ ] 테스트: 연속 BOS 시 방향 유지 확인
+- [x] analyzeStructure() 함수 구현
+  - [x] 이전 swing high 돌파 감지 (close 기준)
+  - [x] 이전 swing low 돌파 감지 (close 기준)
+  - [x] BOS 판단 (추세 유지 방향 돌파)
+  - [x] CHoCH 판단 (추세 변경 방향 돌파)
+  - [x] 현재 시장 방향(direction) 상태 추적
+- [x] 테스트: 상승 추세에서 BOS 감지 (higher high)
+- [x] 테스트: 하락 추세에서 BOS 감지 (lower low)
+- [x] 테스트: 상승→하락 CHoCH 감지
+- [x] 테스트: 하락→상승 CHoCH 감지
+- [x] 테스트: 구조 변경 없는 횡보 구간
+- [x] 테스트: 연속 BOS 시 방향 유지 확인
 
 ### 1.6 Oclif 설정 + 기본 CLI `analyze` 커맨드
 
