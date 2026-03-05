@@ -28,6 +28,9 @@
 | 2026-03-03 | 1.4   | tests/core/smc/swing.test.ts (전체 통과)                | ✅   |
 | 2026-03-04 | 1.5   | analyzeStructure() 구현 (BOS/CHoCH, direction 추적)    | ✅   |
 | 2026-03-04 | 1.5   | tests/core/smc/structure.test.ts (6 tests passed)       | ✅   |
+| 2026-03-05 | 1.6   | Oclif 초기 설정 (bin/run.js, bin/dev.js, package.json)  | ✅   |
+| 2026-03-05 | 1.6   | analyze 커맨드 구현 (파이프라인 + JSON 출력)            | ✅   |
+| 2026-03-05 | 1.6   | tests/core/commands/analyze.test.ts (통합 테스트)       | ✅   |
 
 ---
 
@@ -103,15 +106,15 @@
 
 ### 1.6 Oclif 설정 + 기본 CLI `analyze` 커맨드
 
-- [ ] Oclif 초기 설정 + 빈 커맨드 확인 (1.1에서 이동)
-- [ ] `trade analyze --pair --tf` 커맨드 구현
-  - [ ] 페어/타임프레임 인자 파싱
-  - [ ] 데이터 fetch → swing → structure 파이프라인
-  - [ ] 결과 JSON 포맷 출력
-  - [ ] `--output` 옵션 (파일 저장)
-- [ ] 유효하지 않은 페어/타임프레임 에러 처리
-- [ ] 테스트: CLI 인자 파싱
-- [ ] 테스트: 전체 파이프라인 통합 테스트 (mock 데이터)
+- [x] Oclif 초기 설정 + 빈 커맨드 확인 (1.1에서 이동)
+- [x] `trade analyze --pair --tf` 커맨드 구현
+  - [x] 페어/타임프레임 인자 파싱
+  - [x] 데이터 fetch → swing → structure 파이프라인
+  - [x] 결과 JSON 포맷 출력
+  - [x] `--output` 옵션 (파일 저장)
+- [x] 유효하지 않은 페어/타임프레임 에러 처리
+- [x] 테스트: CLI 인자 파싱
+- [x] 테스트: 전체 파이프라인 통합 테스트 (mock 데이터)
 
 ---
 
