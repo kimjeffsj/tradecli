@@ -42,11 +42,16 @@ export interface OrderBlock {
 export interface FairValueGap {
   direction: 'BULLISH' | 'BEARISH';
   // FVG price range
-  // Bullish: candle[0].high ~ candle[1].low
-  // Bearish: candle[0].low ~ candle[1].high
+  // Bullish: candle[i-1].high ~ candle[i+1].low
+  // Bearish: candle[i+1].high ~ candle[i-1].low
   high: number;
   low: number;
   // FVG를 형성한 중간 캔들 (impulse candle)
   formedAt: Candle;
-  isMitigated: boolean;
+  // impulse 캔들 index — fill 추적 시작점 계산에 사용
+  formedIndex: number;
+  // FVG 생명주기: OPEN → PARTIALLY_FILLED → FILLED
+  status: 'OPEN' | 'PARTIALLY_FILLED' | 'FILLED';
+  // 갭이 메워진 비율 (0~1, 단조증가)
+  fillPercentage: number;
 }
