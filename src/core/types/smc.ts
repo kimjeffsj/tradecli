@@ -33,8 +33,8 @@ export interface OrderBlock {
   low: number;
   // 생성 기준이 된 Structure Break
   structureBreak: StructureBreak;
-  // OB가 유효한지 여부
-  isValid: boolean;
+  // OB 생명주기: FRESH(미진입) -> TESTED -> BROKEN(무효)
+  status: 'FRESH' | 'TESTED' | 'BROKEN';
   createdAt: Candle;
 }
 

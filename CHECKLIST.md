@@ -31,6 +31,9 @@
 | 2026-03-05 | 1.6   | Oclif 초기 설정 (bin/run.js, bin/dev.js, package.json)  | ✅   |
 | 2026-03-05 | 1.6   | analyze 커맨드 구현 (파이프라인 + JSON 출력)            | ✅   |
 | 2026-03-05 | 1.6   | tests/core/commands/analyze.test.ts (통합 테스트)       | ✅   |
+| 2026-03-06 | 2.1   | OrderBlock 타입 status 필드 추가 (isValid → status)     | ✅   |
+| 2026-03-06 | 2.1   | detectOrderBlocks() 구현 (BOS 기반 OB 식별 + 상태 관리)| ✅   |
+| 2026-03-06 | 2.1   | tests/core/smc/orderblock.test.ts (6 tests passed)      | ✅   |
 
 ---
 
@@ -122,18 +125,18 @@
 
 ### 2.1 Order Block Detection
 
-- [ ] detectOrderBlocks() 함수 구현
-  - [ ] BOS 직전 마지막 반대 캔들 영역 식별
-  - [ ] Bullish OB: BOS 직전 마지막 bearish 캔들
-  - [ ] Bearish OB: BOS 직전 마지막 bullish 캔들
-  - [ ] OB 영역 (high/low price) 계산
-  - [ ] 상태 관리: FRESH → TESTED → BROKEN
-  - [ ] 재테스트 감지 (가격이 OB 영역 진입)
-- [ ] 테스트: Bullish OB 감지
-- [ ] 테스트: Bearish OB 감지
-- [ ] 테스트: OB 재테스트 시 상태 변경
-- [ ] 테스트: OB 돌파 시 BROKEN 처리
-- [ ] 테스트: BOS 없으면 OB 생성 안 됨
+- [x] detectOrderBlocks() 함수 구현
+  - [x] BOS 직전 마지막 반대 캔들 영역 식별
+  - [x] Bullish OB: BOS 직전 마지막 bearish 캔들
+  - [x] Bearish OB: BOS 직전 마지막 bullish 캔들
+  - [x] OB 영역 (high/low price) 계산
+  - [x] 상태 관리: FRESH → TESTED → BROKEN
+  - [x] 재테스트 감지 (가격이 OB 영역 진입)
+- [x] 테스트: Bullish OB 감지
+- [x] 테스트: Bearish OB 감지
+- [x] 테스트: OB 재테스트 시 상태 변경
+- [x] 테스트: OB 돌파 시 BROKEN 처리
+- [x] 테스트: BOS 없으면 OB 생성 안 됨
 
 ### 2.2 Fair Value Gap Detection
 
