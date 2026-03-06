@@ -125,6 +125,63 @@ erDiagram
         datetime endDate
     }
 
+    LiveSignal {
+        string action "BUY | SELL | HOLD"
+        string pair
+        string timeframe
+        string direction "LONG | SHORT"
+        float entryPrice
+        float stopLoss
+        float takeProfit
+        float confidence
+        string strategyName
+        string reason
+        datetime generatedAt
+    }
+
+    Position {
+        string positionId
+        string pair
+        string direction "LONG | SHORT"
+        float entryPrice
+        float currentPrice
+        float stopLoss
+        float takeProfit
+        float volume
+        float pnl
+        datetime openedAt
+    }
+
+    OrderResult {
+        string orderId
+        string status "FILLED | REJECTED | PENDING"
+        float filledPrice
+        datetime filledAt
+        string reason
+    }
+
+    CloseResult {
+        string positionId
+        string status "CLOSED | FAILED"
+        float exitPrice
+        float pnl
+        datetime closedAt
+        string reason
+    }
+
+    TradingEvent {
+        string type "SIGNAL_GENERATED | ORDER_FILLED | POSITION_CLOSED | ..."
+        datetime timestamp
+        string message
+    }
+
+    RiskGuardConfig {
+        float maxDailyDrawdown
+        int maxPositions
+        float maxRiskPerTrade
+        int maxDailyTrades
+    }
+
     Candle ||--o{ SwingPoint : "produces"
     SwingPoint ||--o{ StructureBreak : "breaks"
     StructureBreak ||--o| OrderBlock : "creates"
@@ -132,6 +189,14 @@ erDiagram
     Bias ||--|{ TimeframeBias : "composed of"
     Signal }o--|| Trade : "generates"
     Trade }o--|| BacktestResult : "aggregates into"
+    Signal ||--o| LiveSignal : "extends to"
+    LiveSignal ||--o| OrderResult : "executes"
+    LiveSignal ||--o| Position : "opens"
+    Position ||--o| CloseResult : "closes"
+    LiveSignal ||--o{ TradingEvent : "emits"
+    OrderResult ||--o| TradingEvent : "emits"
+    CloseResult ||--o| TradingEvent : "emits"
+    RiskGuardConfig ||--|| LiveSignal : "validates"
 ```
 
 ---
@@ -377,6 +442,111 @@ interface EquityPoint {
 }
 ```
 
+### Live Signal & Execution (Phase 4-6)
+
+```typescript
+// === Live Signal (Phase 4) ===
+interface LiveSignal {
+  direction: 'LONG' | 'SHORT';
+  entryPrice: number;
+  stopLoss: number;
+  takeProfit: number;
+  confidence: number;
+  action: 'BUY' | 'SELL' | 'HOLD';
+  pair: string;
+  timeframe: Timeframe;
+  strategyName: string;
+  reason: string;
+  generatedAt: number;
+}
+
+// === Execution Types (Phase 5) ===
+interface OrderResult {
+  orderId: string;
+  status: 'FILLED' | 'REJECTED' | 'PENDING';
+  filledPrice: number;
+  filledAt: number;
+  reason?: string;
+}
+
+interface Position {
+  positionId: string;
+  pair: string;
+  direction: 'LONG' | 'SHORT';
+  entryPrice: number;
+  currentPrice: number;
+  stopLoss: number;
+  takeProfit: number;
+  volume: number;
+  pnl: number;
+  openedAt: number;
+}
+
+interface CloseResult {
+  positionId: string;
+  status: 'CLOSED' | 'FAILED';
+  exitPrice: number;
+  pnl: number;
+  closedAt: number;
+  reason?: string;
+}
+
+interface AccountInfo {
+  balance: number;
+  equity: number;
+  margin: number;
+  freeMargin: number;
+  currency: string;
+}
+
+// === Execution Adapter Interface (Phase 5) ===
+interface ExecutionAdapter {
+  name: string;
+  execute(signal: LiveSignal): Promise<OrderResult>;
+  getPositions(): Promise<Position[]>;
+  closePosition(positionId: string): Promise<CloseResult>;
+  closeAll(): Promise<CloseResult[]>;
+  getAccountInfo(): Promise<AccountInfo>;
+}
+
+// === Risk Guard (Phase 5) ===
+interface RiskGuardConfig {
+  maxDailyDrawdown: number;
+  maxPositions: number;
+  maxRiskPerTrade: number;
+  maxDailyTrades: number;
+  tradingHours?: {
+    start: string;
+    end: string;
+    timezone: string;
+  };
+}
+
+// === Notification Types (Phase 6) ===
+type TradingEventType =
+  | 'SIGNAL_GENERATED'
+  | 'ORDER_FILLED'
+  | 'POSITION_CLOSED'
+  | 'RISK_GUARD_BLOCKED'
+  | 'ERROR'
+  | 'DAILY_REPORT';
+
+interface TradingEvent {
+  type: TradingEventType;
+  timestamp: number;
+  data: Record<string, unknown>;
+  message: string;
+}
+
+// === Notification Adapter Interface (Phase 6) ===
+interface NotificationAdapter {
+  name: string;
+  notify(event: TradingEvent): Promise<void>;
+  start?(): Promise<void>;
+  stop?(): Promise<void>;
+}
+```
+
 ### Data Adapter
 
 ```typescript
@@ -410,6 +580,8 @@ interface CacheEntry {
 
 ## Data Flow
 
+### Phase 1-3: Analysis & Backtest
+
 ```
 DataAdapter.fetchCandles()
     → Candle[]
@@ -433,6 +605,30 @@ SMCAnalysis (all above combined)
                         → BacktestResult
 ```
 
+### Phase 4-6: Live Signal → Execution → Notification
+
+```
+SignalEngine (cron/interval)
+    → DataAdapter.fetchCandles()
+        → SMC Analysis Pipeline
+            → Strategy.analyze()
+                → LiveSignal
+                    → RiskGuard.validate()
+                        ├─ allowed: true
+                        │   → ExecutionAdapter.execute()
+                        │       → OrderResult
+                        │           → NotificationAdapter.notify(ORDER_FILLED)
+                        └─ allowed: false
+                            → NotificationAdapter.notify(RISK_GUARD_BLOCKED)
+
+Position lifecycle:
+    ExecutionAdapter.getPositions()
+        → Position[]
+    ExecutionAdapter.closePosition()
+        → CloseResult
+            → NotificationAdapter.notify(POSITION_CLOSED)
+```
+
 ---
 
 ## Key Relationships
@@ -447,6 +643,12 @@ SMCAnalysis (all above combined)
 | Signal | Trade | 1:1 | 시그널 하나가 트레이드 하나 |
 | Trade[] | BacktestResult | N:1 | 트레이드 모음이 백테스트 결과 |
 | BacktestResult | RiskMetrics | 1:1 | 결과에서 리스크 메트릭 계산 |
+| Signal | LiveSignal | 1:1 | 백테스트 시그널을 라이브로 확장 |
+| LiveSignal | RiskGuard | N:1 | 주문 전 리스크 검증 |
+| LiveSignal | OrderResult | 1:1 | 주문 실행 결과 |
+| LiveSignal | Position | 1:1 | 실행된 포지션 |
+| Position | CloseResult | 1:1 | 포지션 청산 결과 |
+| LiveSignal/OrderResult/CloseResult | TradingEvent | 1:N | 이벤트 발생 → 알림 전달 |
 
 ---
 

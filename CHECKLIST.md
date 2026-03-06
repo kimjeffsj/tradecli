@@ -308,25 +308,144 @@
 
 ---
 
-## Phase 4: Extension (선택)
+## Phase 4: Live Signal Engine (3주)
 
-### 4.1 추가 데이터 어댑터
+### 4.1 LiveSignal 타입 정의
+
+- [ ] LiveSignal 인터페이스 정의 (Signal 확장)
+  - [ ] action: 'BUY' | 'SELL' | 'HOLD'
+  - [ ] pair, timeframe, strategyName, reason, generatedAt
+- [ ] SignalEngineConfig 타입 정의
+- [ ] TickInfo 타입 정의
+- [ ] 테스트: LiveSignal 타입 검증
+
+### 4.2 SignalEngine 구현
+
+- [ ] SignalEngine 클래스 (EventEmitter 패턴)
+  - [ ] start(): cron/interval 기반 주기적 실행
+  - [ ] stop(): 중지
+  - [ ] runOnce(): 1회 실행 (디버깅/테스트용)
+  - [ ] 'signal', 'error', 'tick' 이벤트 발생
+- [ ] 에러 핸들링 (재시도 로직, exponential backoff)
+- [ ] live-config.json 설정 파일 파싱
+- [ ] 테스트: SignalEngine 시작/중지
+- [ ] 테스트: 시그널 이벤트 발생
+- [ ] 테스트: 데이터 fetch 실패 시 재시도
+- [ ] 테스트: 설정 파일 파싱
+
+### 4.3 CLI `live` 커맨드
+
+- [ ] `trade live --pair --strategy --interval` 구현
+- [ ] `trade live --config` (설정 파일 기반)
+- [ ] `trade live --once` (1회 실행)
+- [ ] `--min-confidence` 옵션
+- [ ] 테스트: CLI 인자 파싱
+- [ ] 테스트: 전체 라이브 파이프라인 통합 테스트
+
+---
+
+## Phase 5: MT5 Execution (3주)
+
+### 5.1 ExecutionAdapter 인터페이스 + 타입 정의
+
+- [ ] ExecutionAdapter 인터페이스 정의
+  - [ ] execute(signal): Promise<OrderResult>
+  - [ ] getPositions(): Promise<Position[]>
+  - [ ] closePosition(id): Promise<CloseResult>
+  - [ ] closeAll(): Promise<CloseResult[]>
+  - [ ] getAccountInfo(): Promise<AccountInfo>
+- [ ] OrderResult, Position, CloseResult, AccountInfo 타입 정의
+- [ ] 테스트: 인터페이스 준수 확인 (Mock 구현체)
+
+### 5.2 RiskGuard 구현
+
+- [ ] RiskGuardConfig 타입 정의
+- [ ] RiskGuard 클래스 구현
+  - [ ] validate(signal): 주문 전 리스크 검증
+  - [ ] getDailyStats(): 일일 통계
+  - [ ] maxDailyDrawdown 검증
+  - [ ] maxPositions 검증
+  - [ ] maxRiskPerTrade 검증
+  - [ ] maxDailyTrades 검증
+  - [ ] tradingHours 검증 (선택)
+- [ ] 테스트: 한도 이내 주문 허용
+- [ ] 테스트: 일일 드로우다운 초과 시 차단
+- [ ] 테스트: 최대 포지션 초과 시 차단
+- [ ] 테스트: 트레이드당 리스크 초과 시 차단
+
+### 5.3 MetaAPIAdapter 구현
+
+- [ ] metaapi.cloud SDK 연동
+- [ ] execute() 구현 (주문 생성)
+- [ ] getPositions() 구현 (오픈 포지션 조회)
+- [ ] closePosition() 구현 (개별 청산)
+- [ ] closeAll() 구현 (전체 청산)
+- [ ] getAccountInfo() 구현 (잔고/마진 조회)
+- [ ] 테스트: Mock 기반 주문 실행 플로우
+
+### 5.4 CLI `execute`, `positions`, `close` 커맨드
+
+- [ ] `trade execute --dry-run` (기본값)
+- [ ] `trade execute --confirm` (확인 프롬프트)
+- [ ] `trade execute --force` (즉시 실행, RiskGuard 유지)
+- [ ] `trade positions` (포지션 조회)
+- [ ] `trade close <id>` (개별 청산)
+- [ ] `trade close --all` (전체 청산)
+- [ ] execution-config.json 파싱
+- [ ] 테스트: 드라이런 모드 확인
+- [ ] 테스트: RiskGuard 통합 테스트
+
+---
+
+## Phase 6: Telegram Monitoring (2주)
+
+### 6.1 NotificationAdapter 인터페이스 + 타입 정의
+
+- [ ] NotificationAdapter 인터페이스 정의
+  - [ ] notify(event: TradingEvent): Promise<void>
+  - [ ] start?(): Promise<void>
+  - [ ] stop?(): Promise<void>
+- [ ] TradingEvent, TradingEventType 타입 정의
+- [ ] 테스트: 인터페이스 준수 확인 (Mock 구현체)
+
+### 6.2 TelegramAdapter 구현 (grammy)
+
+- [ ] grammy 봇 초기화 + 연결
+- [ ] 알림 전송 (시그널, 체결, 청산, 에러)
+- [ ] 메시지 포맷팅 (마크다운)
+- [ ] 봇 커맨드 구현
+  - [ ] /status (엔진 상태)
+  - [ ] /positions (오픈 포지션)
+  - [ ] /pnl (일일 PnL)
+  - [ ] /closeall (전체 청산, 확인 후)
+- [ ] 일일 리포트 자동 전송 (cron 기반)
+- [ ] .env 기반 설정 (BOT_TOKEN, CHAT_ID)
+- [ ] notification-config.json 파싱 (선택)
+- [ ] 테스트: 이벤트별 메시지 포맷
+- [ ] 테스트: 봇 커맨드 핸들링
+- [ ] 테스트: 일일 리포트 생성
+
+---
+
+## Phase 7+: Future (선택)
+
+### 7.1 추가 데이터 어댑터
 
 - [ ] CCXT 어댑터 (크립토)
 - [ ] 어댑터 선택 CLI 옵션 (--source)
 
-### 4.2 추가 전략
+### 7.2 추가 전략
 
 - [ ] ICT 전략 모듈 (Killzone, Liquidity Sweep 등)
 - [ ] 기술적 지표 전략 (RSI + EMA)
 
-### 4.3 인프라
+### 7.3 인프라
 
 - [ ] Dockerfile + docker-compose
 - [ ] GitHub Actions CI/CD
 - [ ] npm 패키지 배포
 
-### 4.4 Web Dashboard (별도 프로젝트)
+### 7.4 Web Dashboard (별도 프로젝트)
 
 - [ ] REST API 레이어
 - [ ] 차트 시각화

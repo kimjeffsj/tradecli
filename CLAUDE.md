@@ -7,11 +7,12 @@
 ## 프로젝트 개요
 
 TradeLab CLI는 SMC(Smart Money Concepts) 기반 전략 연구 플랫폼이다.
+Phase 1-3(분석 + 백테스트)을 기반으로, **실시간 시그널 생성 → MT5 자동매매 → 텔레그램 모니터링**까지 확장한다.
 
 **핵심 철학:**
 - CLI는 인터페이스일 뿐 — Core Engine은 CLI 없이도 동작해야 한다
-- 데이터 → 전략 → 백테스트는 완전 분리
-- 데이터 소스는 어댑터 패턴으로 교체 가능
+- 데이터 → 전략 → 백테스트 → 실행은 완전 분리
+- 데이터 소스/실행 엔진/알림 채널은 어댑터 패턴으로 교체 가능
 
 ---
 
@@ -33,6 +34,8 @@ TradeLab CLI는 SMC(Smart Money Concepts) 기반 전략 연구 플랫폼이다.
 - **Core Engine은 CLI를 import하지 않는다** (역방향 의존 금지)
 - **각 모듈은 인터페이스를 통해 소통한다**
 - **순수 함수 우선** — 부수 효과는 경계(boundary)에서만
+- **실행(Execution)은 드라이런이 기본값** — 명시적 플래그 없이 실주문 불가
+- **모든 주문은 리스크 한도 검증을 통과해야 한다** (RiskGuard)
 - `any` 금지 — `unknown` + 타입 가드 사용
 - 함수형 스타일 우선, 클래스는 상태가 필요할 때만
 
@@ -51,7 +54,10 @@ src/
     ├── bias/                 # Multi-timeframe Bias Engine
     ├── strategy/             # Strategy 인터페이스 + Registry
     ├── backtest/             # Backtest Engine + PositionSizer
-    └── risk/                 # Sharpe, Sortino, VaR, Drawdown
+    ├── risk/                 # Sharpe, Sortino, VaR, Drawdown
+    ├── signal/               # Live Signal Engine (Phase 4)
+    ├── execution/            # ExecutionAdapter + MetaAPI (Phase 5)
+    └── notification/         # NotificationAdapter + Telegram (Phase 6)
 tests/
 ├── fixtures/                 # 테스트용 캔들 데이터 + helpers.ts
 └── core/                     # 유닛 테스트 (smc, bias, backtest, risk)
@@ -121,7 +127,8 @@ pnpm format         # Prettier
 
 | 문서 | 설명 |
 |------|------|
-| `prd.md` | 제품 요구사항 |
+| `prd.md` | 제품 요구사항 (Phase 1-3) |
+| `prd-v2.md` | 확장 기획서 (Phase 4-6: Signal, Execution, Notification) |
 | `erd.md` | 데이터 모델 |
 | `CHECKLIST.md` | Phase별 구현 체크리스트 + 진행 로그 |
 | `.claude/skills/conventions.md` | 네이밍·테스트·주석·에러 처리 패턴 |
