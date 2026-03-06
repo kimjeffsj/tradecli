@@ -442,10 +442,10 @@ interface EquityPoint {
 }
 ```
 
-### Live Signal & Execution (Phase 4-6)
+### Live Signal (Phase 4 — TypeScript)
 
 ```typescript
-// === Live Signal (Phase 4) ===
+// === Live Signal ===
 interface LiveSignal {
   direction: 'LONG' | 'SHORT';
   entryPrice: number;
@@ -460,91 +460,91 @@ interface LiveSignal {
   generatedAt: number;
 }
 
-// === Execution Types (Phase 5) ===
-interface OrderResult {
-  orderId: string;
-  status: 'FILLED' | 'REJECTED' | 'PENDING';
-  filledPrice: number;
-  filledAt: number;
-  reason?: string;
-}
+// === Signal Engine Config ===
+type DeliveryMode = 'file' | 'http' | 'both';
 
-interface Position {
-  positionId: string;
+interface SignalEngineConfig {
   pair: string;
-  direction: 'LONG' | 'SHORT';
-  entryPrice: number;
-  currentPrice: number;
-  stopLoss: number;
-  takeProfit: number;
-  volume: number;
-  pnl: number;
-  openedAt: number;
+  timeframe: Timeframe;
+  strategyName: string;
+  interval: string;
+  dataAdapter: string;
+  lookback: number;
+  deliveryMode: DeliveryMode;
+  httpEndpoint?: string;
+  outputDir?: string;
 }
+```
 
-interface CloseResult {
-  positionId: string;
-  status: 'CLOSED' | 'FAILED';
-  exitPrice: number;
-  pnl: number;
-  closedAt: number;
-  reason?: string;
-}
+### Execution & Notification (Phase 5-6 — Python Pydantic)
 
-interface AccountInfo {
-  balance: number;
-  equity: number;
-  margin: number;
-  freeMargin: number;
-  currency: string;
-}
+```python
+# === Execution Types (Phase 5) ===
 
-// === Execution Adapter Interface (Phase 5) ===
-interface ExecutionAdapter {
-  name: string;
-  execute(signal: LiveSignal): Promise<OrderResult>;
-  getPositions(): Promise<Position[]>;
-  closePosition(positionId: string): Promise<CloseResult>;
-  closeAll(): Promise<CloseResult[]>;
-  getAccountInfo(): Promise<AccountInfo>;
-}
+class LiveSignal(BaseModel):
+    """TS SignalEngine에서 HTTP POST로 수신하는 시그널."""
+    action: str           # "BUY" | "SELL" | "HOLD"
+    pair: str
+    timeframe: str
+    direction: str        # "LONG" | "SHORT"
+    entry_price: float
+    stop_loss: float
+    take_profit: float
+    confidence: float
+    strategy_name: str
+    reason: str
+    generated_at: int     # Unix timestamp (ms)
 
-// === Risk Guard (Phase 5) ===
-interface RiskGuardConfig {
-  maxDailyDrawdown: number;
-  maxPositions: number;
-  maxRiskPerTrade: number;
-  maxDailyTrades: number;
-  tradingHours?: {
-    start: string;
-    end: string;
-    timezone: string;
-  };
-}
+class OrderResult(BaseModel):
+    order_id: str
+    status: str           # "FILLED" | "REJECTED" | "PENDING"
+    filled_price: float
+    filled_at: int
+    reason: str | None = None
 
-// === Notification Types (Phase 6) ===
-type TradingEventType =
-  | 'SIGNAL_GENERATED'
-  | 'ORDER_FILLED'
-  | 'POSITION_CLOSED'
-  | 'RISK_GUARD_BLOCKED'
-  | 'ERROR'
-  | 'DAILY_REPORT';
+class Position(BaseModel):
+    position_id: str
+    pair: str
+    direction: str
+    entry_price: float
+    current_price: float
+    stop_loss: float
+    take_profit: float
+    volume: float
+    pnl: float
+    opened_at: int
 
-interface TradingEvent {
-  type: TradingEventType;
-  timestamp: number;
-  data: Record<string, unknown>;
-  message: string;
-}
+class CloseResult(BaseModel):
+    position_id: str
+    status: str           # "CLOSED" | "FAILED"
+    exit_price: float
+    pnl: float
+    closed_at: int
+    reason: str | None = None
 
-// === Notification Adapter Interface (Phase 6) ===
-interface NotificationAdapter {
-  name: string;
-  notify(event: TradingEvent): Promise<void>;
-  start?(): Promise<void>;
-  stop?(): Promise<void>;
-}
+class AccountInfo(BaseModel):
+    balance: float
+    equity: float
+    margin: float
+    free_margin: float
+    currency: str
+
+# === Risk Guard (Phase 5) ===
+
+class RiskGuardConfig(BaseModel):
+    max_daily_drawdown: float
+    max_positions: int
+    max_risk_per_trade: float
+    max_daily_trades: int
+    trading_hours: TradingHours | None = None
+
+# === Trading Event (Phase 6) ===
+
+class TradingEvent(BaseModel):
+    type: str             # "SIGNAL_GENERATED" | "ORDER_FILLED" | ...
+    timestamp: int
+    data: dict
+    message: str
 ```
 
 ### Data Adapter
@@ -605,29 +605,83 @@ SMCAnalysis (all above combined)
                         → BacktestResult
 ```
 
-### Phase 4-6: Live Signal → Execution → Notification
+### Phase 4-6: Live Signal → HTTP → Python Execution → Telegram
 
 ```
+[TypeScript]
 SignalEngine (cron/interval)
     → DataAdapter.fetchCandles()
         → SMC Analysis Pipeline
             → Strategy.analyze()
                 → LiveSignal
-                    → RiskGuard.validate()
-                        ├─ allowed: true
-                        │   → ExecutionAdapter.execute()
-                        │       → OrderResult
-                        │           → NotificationAdapter.notify(ORDER_FILLED)
-                        └─ allowed: false
-                            → NotificationAdapter.notify(RISK_GUARD_BLOCKED)
+                    → HTTP POST /api/signals (JSON)
+                        ↓
+[Python — executor/]
+FastAPI Server
+    → POST /api/signals 수신
+        → RiskGuard.validate()
+            ├─ allowed: true
+            │   → MT5.execute() (MetaTrader5)
+            │       → OrderResult
+            │           → TelegramBot.notify(ORDER_FILLED)
+            └─ allowed: false
+                → TelegramBot.notify(RISK_GUARD_BLOCKED)
 
-Position lifecycle:
-    ExecutionAdapter.getPositions()
-        → Position[]
-    ExecutionAdapter.closePosition()
-        → CloseResult
-            → NotificationAdapter.notify(POSITION_CLOSED)
+Position lifecycle (Python REST API):
+    GET /api/positions → Position[]
+    POST /api/close/{id} → CloseResult → TelegramBot.notify(POSITION_CLOSED)
+    POST /api/close-all → CloseResult[] → TelegramBot.notify(POSITION_CLOSED)
 ```
+
+---
+
+## TS ↔ Python Communication Protocol
+
+TypeScript SignalEngine이 LiveSignal을 생성하면 Python executor 서버로 HTTP POST 전송.
+
+### POST /api/signals — Request (TS → Python)
+
+```json
+{
+  "action": "BUY",
+  "pair": "XAUUSD",
+  "timeframe": "H1",
+  "direction": "LONG",
+  "entryPrice": 2350.50,
+  "stopLoss": 2340.00,
+  "takeProfit": 2371.50,
+  "confidence": 0.78,
+  "strategyName": "smc",
+  "reason": "Bullish OB retest at H1 + D1 bullish bias",
+  "generatedAt": 1709726400000
+}
+```
+
+### POST /api/signals — Response (Python → TS)
+
+```json
+{
+  "orderId": "mt5-12345",
+  "status": "FILLED",
+  "filledPrice": 2350.60,
+  "filledAt": 1709726401000,
+  "reason": null
+}
+```
+
+### JSON 필드 매핑 (TS camelCase ↔ Python snake_case)
+
+| TypeScript | Python | 타입 |
+|-----------|--------|------|
+| entryPrice | entry_price | float |
+| stopLoss | stop_loss | float |
+| takeProfit | take_profit | float |
+| strategyName | strategy_name | str |
+| generatedAt | generated_at | int (ms) |
+| filledPrice | filled_price | float |
+| filledAt | filled_at | int (ms) |
+
+> Note: HTTP JSON 전송 시 camelCase 사용 (TS 기준). Python 서버에서 Pydantic `alias_generator`로 자동 변환.
 
 ---
 

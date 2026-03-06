@@ -308,7 +308,18 @@
 
 ---
 
-## Phase 4: Live Signal Engine (3주)
+## Phase 4: Live Signal Engine — TypeScript (3주)
+
+### 4.0 TwelveData DataAdapter (사전 조건)
+
+- [ ] TwelveDataAdapter 구현 (DataAdapter 인터페이스 준수)
+  - [ ] fetchCandles(): GET /time_series 호출
+  - [ ] getSupportedPairs(): 지원 페어 목록
+  - [ ] getSupportedTimeframes(): 지원 타임프레임
+  - [ ] API Key 환경 변수 (TWELVEDATA_API_KEY)
+  - [ ] 레이트 리밋 처리
+- [ ] 테스트: API 응답 파싱
+- [ ] 테스트: 에러 처리 (401, 429, 네트워크)
 
 ### 4.1 LiveSignal 타입 정의
 
@@ -316,6 +327,8 @@
   - [ ] action: 'BUY' | 'SELL' | 'HOLD'
   - [ ] pair, timeframe, strategyName, reason, generatedAt
 - [ ] SignalEngineConfig 타입 정의
+  - [ ] deliveryMode: 'file' | 'http' | 'both'
+  - [ ] httpEndpoint, outputDir 옵션
 - [ ] TickInfo 타입 정의
 - [ ] 테스트: LiveSignal 타입 검증
 
@@ -326,11 +339,16 @@
   - [ ] stop(): 중지
   - [ ] runOnce(): 1회 실행 (디버깅/테스트용)
   - [ ] 'signal', 'error', 'tick' 이벤트 발생
+- [ ] 출력 모드 구현
+  - [ ] file: JSON 파일 저장
+  - [ ] http: POST /api/signals (Python executor로 전송)
+  - [ ] both: 파일 + HTTP 동시
 - [ ] 에러 핸들링 (재시도 로직, exponential backoff)
 - [ ] live-config.json 설정 파일 파싱
 - [ ] 테스트: SignalEngine 시작/중지
 - [ ] 테스트: 시그널 이벤트 발생
 - [ ] 테스트: 데이터 fetch 실패 시 재시도
+- [ ] 테스트: HTTP POST 출력 모드
 - [ ] 테스트: 설정 파일 파싱
 
 ### 4.3 CLI `live` 커맨드
@@ -344,73 +362,58 @@
 
 ---
 
-## Phase 5: MT5 Execution (3주)
+## Phase 5: MT5 Execution — Python executor/ (3주)
 
-### 5.1 ExecutionAdapter 인터페이스 + 타입 정의
+### 5.1 프로젝트 초기화
 
-- [ ] ExecutionAdapter 인터페이스 정의
-  - [ ] execute(signal): Promise<OrderResult>
-  - [ ] getPositions(): Promise<Position[]>
-  - [ ] closePosition(id): Promise<CloseResult>
-  - [ ] closeAll(): Promise<CloseResult[]>
-  - [ ] getAccountInfo(): Promise<AccountInfo>
-- [ ] OrderResult, Position, CloseResult, AccountInfo 타입 정의
-- [ ] 테스트: 인터페이스 준수 확인 (Mock 구현체)
+- [ ] executor/ 디렉터리 생성
+- [ ] pyproject.toml 설정 (uv, FastAPI, MetaTrader5, pytest, mypy, ruff)
+- [ ] .env.example 작성
+- [ ] Pydantic 모델 정의 (models.py)
+  - [ ] LiveSignal, OrderResult, Position, CloseResult, AccountInfo
 
-### 5.2 RiskGuard 구현
+### 5.2 RiskGuard 구현 (Python)
 
-- [ ] RiskGuardConfig 타입 정의
+- [ ] RiskGuardConfig (Pydantic 모델)
 - [ ] RiskGuard 클래스 구현
   - [ ] validate(signal): 주문 전 리스크 검증
-  - [ ] getDailyStats(): 일일 통계
-  - [ ] maxDailyDrawdown 검증
-  - [ ] maxPositions 검증
-  - [ ] maxRiskPerTrade 검증
-  - [ ] maxDailyTrades 검증
-  - [ ] tradingHours 검증 (선택)
+  - [ ] max_daily_drawdown 검증
+  - [ ] max_positions 검증
+  - [ ] max_risk_per_trade 검증
+  - [ ] max_daily_trades 검증
+  - [ ] trading_hours 검증 (선택)
 - [ ] 테스트: 한도 이내 주문 허용
-- [ ] 테스트: 일일 드로우다운 초과 시 차단
-- [ ] 테스트: 최대 포지션 초과 시 차단
-- [ ] 테스트: 트레이드당 리스크 초과 시 차단
+- [ ] 테스트: 각 한도 초과 시 차단
 
-### 5.3 MetaAPIAdapter 구현
+### 5.3 MT5 연동 (mt5.py)
 
-- [ ] metaapi.cloud SDK 연동
-- [ ] execute() 구현 (주문 생성)
-- [ ] getPositions() 구현 (오픈 포지션 조회)
-- [ ] closePosition() 구현 (개별 청산)
-- [ ] closeAll() 구현 (전체 청산)
-- [ ] getAccountInfo() 구현 (잔고/마진 조회)
+- [ ] MetaTrader5 패키지 래퍼
+  - [ ] 초기화 + 로그인
+  - [ ] 주문 실행 (market order)
+  - [ ] 오픈 포지션 조회
+  - [ ] 개별/전체 청산
+  - [ ] 계좌 정보 조회
 - [ ] 테스트: Mock 기반 주문 실행 플로우
 
-### 5.4 CLI `execute`, `positions`, `close` 커맨드
+### 5.4 FastAPI 서버 (main.py)
 
-- [ ] `trade execute --dry-run` (기본값)
-- [ ] `trade execute --confirm` (확인 프롬프트)
-- [ ] `trade execute --force` (즉시 실행, RiskGuard 유지)
-- [ ] `trade positions` (포지션 조회)
-- [ ] `trade close <id>` (개별 청산)
-- [ ] `trade close --all` (전체 청산)
-- [ ] execution-config.json 파싱
-- [ ] 테스트: 드라이런 모드 확인
-- [ ] 테스트: RiskGuard 통합 테스트
+- [ ] POST /api/signals (시그널 수신 → RiskGuard → 주문 실행)
+- [ ] GET /api/positions (오픈 포지션 조회)
+- [ ] POST /api/close/{id} (개별 청산)
+- [ ] POST /api/close-all (전체 청산)
+- [ ] GET /api/account (계좌 정보)
+- [ ] GET /api/health (서버 + MT5 연결 상태)
+- [ ] 드라이런 모드 (기본값)
+- [ ] 테스트: FastAPI TestClient 기반 API 테스트
 
 ---
 
-## Phase 6: Telegram Monitoring (2주)
+## Phase 6: Telegram Monitoring — Python executor/ 통합 (2주)
 
-### 6.1 NotificationAdapter 인터페이스 + 타입 정의
+### 6.1 텔레그램 봇 구현 (telegram_bot.py)
 
-- [ ] NotificationAdapter 인터페이스 정의
-  - [ ] notify(event: TradingEvent): Promise<void>
-  - [ ] start?(): Promise<void>
-  - [ ] stop?(): Promise<void>
-- [ ] TradingEvent, TradingEventType 타입 정의
-- [ ] 테스트: 인터페이스 준수 확인 (Mock 구현체)
-
-### 6.2 TelegramAdapter 구현 (grammy)
-
-- [ ] grammy 봇 초기화 + 연결
+- [ ] python-telegram-bot 봇 초기화
+- [ ] FastAPI lifespan에서 봇 시작/종료
 - [ ] 알림 전송 (시그널, 체결, 청산, 에러)
 - [ ] 메시지 포맷팅 (마크다운)
 - [ ] 봇 커맨드 구현
@@ -418,34 +421,62 @@
   - [ ] /positions (오픈 포지션)
   - [ ] /pnl (일일 PnL)
   - [ ] /closeall (전체 청산, 확인 후)
-- [ ] 일일 리포트 자동 전송 (cron 기반)
+- [ ] 일일 리포트 자동 전송
 - [ ] .env 기반 설정 (BOT_TOKEN, CHAT_ID)
-- [ ] notification-config.json 파싱 (선택)
 - [ ] 테스트: 이벤트별 메시지 포맷
 - [ ] 테스트: 봇 커맨드 핸들링
 - [ ] 테스트: 일일 리포트 생성
 
 ---
 
-## Phase 7+: Future (선택)
+## Phase 7: 데이터 분석 — Python analysis/ (2주)
 
-### 7.1 추가 데이터 어댑터
+### 7.1 프로젝트 초기화
+
+- [ ] analysis/ 디렉터리 생성
+- [ ] pyproject.toml 설정 (pandas, matplotlib, plotly, jupyterlab)
+
+### 7.2 백테스트 분석
+
+- [ ] 백테스트 JSON 로딩 + pandas DataFrame 변환
+- [ ] 에쿼티 커브 시각화
+- [ ] 드로우다운 히트맵
+- [ ] 승률/수익 분포 히스토그램
+- [ ] 타임프레임별/페어별 성능 비교
+
+### 7.3 트레이딩 로그 분석
+
+- [ ] 실시간 PnL 추적 시각화
+- [ ] 시그널 vs 실제 체결 슬리피지 분석
+- [ ] RiskGuard 차단 통계
+
+### 7.4 자동 리포트
+
+- [ ] generate_report.py 스크립트
+- [ ] Jupyter 노트북 템플릿 (backtest_analysis, performance_report)
+- [ ] 테스트: 리포트 생성 검증
+
+---
+
+## Phase 8+: Future (선택)
+
+### 8.1 추가 데이터 어댑터
 
 - [ ] CCXT 어댑터 (크립토)
 - [ ] 어댑터 선택 CLI 옵션 (--source)
 
-### 7.2 추가 전략
+### 8.2 추가 전략
 
 - [ ] ICT 전략 모듈 (Killzone, Liquidity Sweep 등)
 - [ ] 기술적 지표 전략 (RSI + EMA)
 
-### 7.3 인프라
+### 8.3 인프라
 
-- [ ] Dockerfile + docker-compose
+- [ ] Dockerfile + docker-compose (TS + Python 통합)
 - [ ] GitHub Actions CI/CD
 - [ ] npm 패키지 배포
 
-### 7.4 Web Dashboard (별도 프로젝트)
+### 8.4 Web Dashboard (별도 프로젝트)
 
 - [ ] REST API 레이어
 - [ ] 차트 시각화

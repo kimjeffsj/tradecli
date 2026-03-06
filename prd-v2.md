@@ -2,6 +2,9 @@
 
 > SMC 기반 전략 연구 + 실시간 시그널 + MT5 자동매매 + 텔레그램 모니터링
 
+> **NOTE:** Phase 5-7은 `prd-v3.md`에서 멀티 언어 아키텍처(TypeScript + Python)로 재설계되었다.
+> 이 문서의 Phase 5-6 TypeScript 인터페이스는 **참고용으로 유지**하며, 실제 구현은 prd-v3의 Python 기반 설계를 따른다.
+
 ---
 
 ## 1. Product Overview
@@ -190,6 +193,9 @@ trade live --pair XAUUSD --strategy smc --once    # 1회 실행 (디버깅용)
 
 ## 5. Phase 5: MT5 Execution
 
+> **Python 전환:** 이 Phase는 prd-v3.md에서 Python(FastAPI + MetaTrader5 공식 패키지)으로 재설계되었다.
+> 아래 TypeScript 인터페이스는 설계 참고용으로 유지한다.
+
 ### 5.1 목표
 
 LiveSignal을 받아 MT5에서 실제(또는 시뮬레이션) 주문을 실행한다. DataAdapter 철학과 동일하게 ExecutionAdapter 인터페이스로 추상화한다.
@@ -336,6 +342,9 @@ trade close --all                        # 전체 포지션 청산
 
 ## 6. Phase 6: Telegram Monitoring
 
+> **Python 전환:** 이 Phase는 prd-v3.md에서 Python(python-telegram-bot)으로 재설계되었다.
+> Phase 5 FastAPI 서버에 통합 구현. 아래 TypeScript 인터페이스는 설계 참고용으로 유지한다.
+
 ### 6.1 목표
 
 트레이딩 이벤트(시그널, 체결, 청산, 에러)를 텔레그램으로 실시간 알림하고, 봇 커맨드로 상태 조회 및 원격 제어를 제공한다.
@@ -412,9 +421,9 @@ TELEGRAM_CHAT_ID=your_chat_id
 
 ---
 
-## 7. Phase 7+: Future
+## 7. Phase 8+: Future
 
-기존 `prd.md` Phase 4(Extension)에서 이동. 우선순위 낮음.
+기존 `prd.md` Phase 4(Extension)에서 이동. Phase 7(데이터 분석)은 prd-v3.md 참조. 우선순위 낮음.
 
 - **CCXT 어댑터**: 크립토 데이터 소스
 - **ICT 전략 모듈**: Killzone, Liquidity Sweep 등
@@ -428,12 +437,20 @@ TELEGRAM_CHAT_ID=your_chat_id
 
 ## 8. 새로운 의존성 패키지
 
+### TypeScript (Phase 4)
+
 | Phase | 패키지 | 용도 |
 |-------|--------|------|
 | Phase 4 | `node-cron` | 주기적 분석 파이프라인 실행 (또는 `setInterval` 대안) |
-| Phase 5 | `metaapi.cloud` SDK | MT5 REST API 통신 |
-| Phase 5 | `dotenv` | 환경 변수 관리 (.env) |
-| Phase 6 | `grammy` | Telegram Bot API |
+
+### Python (Phase 5-6) — 상세는 prd-v3.md 참조
+
+| Phase | 패키지 | 용도 |
+|-------|--------|------|
+| Phase 5 | `fastapi`, `uvicorn` | REST API 서버 |
+| Phase 5 | `MetaTrader5` | MT5 공식 Python 패키지 |
+| Phase 5 | `pydantic` | 데이터 검증 |
+| Phase 6 | `python-telegram-bot` | Telegram Bot API |
 
 ---
 
@@ -442,9 +459,10 @@ TELEGRAM_CHAT_ID=your_chat_id
 | Phase | 기간 | 핵심 마일스톤 |
 |-------|------|--------------|
 | Phase 4: Live Signal Engine | 3주 | SignalEngine, LiveSignal, cron 실행, `trade live` CLI |
-| Phase 5: MT5 Execution | 3주 | ExecutionAdapter, MetaAPIAdapter, RiskGuard, `trade execute` CLI |
-| Phase 6: Telegram Monitoring | 2주 | TelegramAdapter, 봇 커맨드, 일일 리포트 |
-| Phase 7+: Future | TBD | CCXT, ICT, Web Dashboard 등 |
+| Phase 5: MT5 Execution (Python) | 3주 | FastAPI, MetaTrader5, RiskGuard, REST API |
+| Phase 6: Telegram (Python) | 2주 | python-telegram-bot, 봇 커맨드, 일일 리포트 |
+| Phase 7: Analysis (Python) | 2주 | pandas, Jupyter, 자동 리포트 — prd-v3.md |
+| Phase 8+: Future | TBD | CCXT, ICT, Web Dashboard 등 |
 
 ---
 
