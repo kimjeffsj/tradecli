@@ -34,6 +34,14 @@
 | 2026-03-06 | 2.1   | OrderBlock 타입 status 필드 추가 (isValid → status)     | ✅   |
 | 2026-03-06 | 2.1   | detectOrderBlocks() 구현 (BOS 기반 OB 식별 + 상태 관리)| ✅   |
 | 2026-03-06 | 2.1   | tests/core/smc/orderblock.test.ts (6 tests passed)      | ✅   |
+| 2026-03-07 | 2.2   | FairValueGap 타입 수정 (isMitigated → status + fillPercentage) | ✅   |
+| 2026-03-07 | 2.2   | detectFVG() 구현 (3캔들 FVG 감지 + fill 상태 추적)     | ✅   |
+| 2026-03-07 | 2.2   | tests/core/smc/fvg.test.ts (6 tests passed)             | ✅   |
+| 2026-03-07 | 2.3   | StructureResult, SMCAnalysis 공유 타입 추가              | ✅   |
+| 2026-03-07 | 2.3   | SMCAnalyzer 클래스 (Swing→Structure→OB→FVG 파이프라인)   | ✅   |
+| 2026-03-07 | 2.3   | barrel export (smc/index.ts)                             | ✅   |
+| 2026-03-07 | 2.3   | analyze 커맨드 SMCAnalyzer 전환 + OB/FVG 출력            | ✅   |
+| 2026-03-07 | 2.3   | tests/core/smc/analyzer.test.ts (3 tests passed)         | ✅   |
 
 ---
 
@@ -140,27 +148,27 @@
 
 ### 2.2 Fair Value Gap Detection
 
-- [ ] detectFVG() 함수 구현
-  - [ ] 3캔들 구조 기반 갭 탐지
-  - [ ] Bullish FVG: candle[i-1].high < candle[i+1].low
-  - [ ] Bearish FVG: candle[i-1].low > candle[i+1].high
-  - [ ] FVG 영역 (high/low) 계산
-  - [ ] 갭 메워짐(fill) 비율 추적
-  - [ ] 상태 관리: OPEN → PARTIALLY_FILLED → FILLED
-- [ ] 테스트: Bullish FVG 감지
-- [ ] 테스트: Bearish FVG 감지
-- [ ] 테스트: FVG 부분 충전 시 상태 변경
-- [ ] 테스트: FVG 완전 충전 시 FILLED
-- [ ] 테스트: FVG 없는 구간 (갭 없음)
+- [x] detectFVG() 함수 구현
+  - [x] 3캔들 구조 기반 갭 탐지
+  - [x] Bullish FVG: candle[i-1].high < candle[i+1].low
+  - [x] Bearish FVG: candle[i-1].low > candle[i+1].high
+  - [x] FVG 영역 (high/low) 계산
+  - [x] 갭 메워짐(fill) 비율 추적
+  - [x] 상태 관리: OPEN → PARTIALLY_FILLED → FILLED
+- [x] 테스트: Bullish FVG 감지
+- [x] 테스트: Bearish FVG 감지
+- [x] 테스트: FVG 부분 충전 시 상태 변경
+- [x] 테스트: FVG 완전 충전 시 FILLED
+- [x] 테스트: FVG 없는 구간 (갭 없음)
 
 ### 2.3 SMC 통합 분석기
 
-- [ ] SMCAnalyzer 클래스 구현
-  - [ ] 캔들 입력 → 전체 SMC 분석 파이프라인
-  - [ ] Swing → Structure → OB → FVG 순차 실행
-  - [ ] SMCAnalysis 결과 객체 생성
-- [ ] 테스트: 전체 파이프라인 통합 테스트
-- [ ] 테스트: 실제 시장 데이터 기반 검증 (fixtures)
+- [x] SMCAnalyzer 클래스 구현
+  - [x] 캔들 입력 → 전체 SMC 분석 파이프라인
+  - [x] Swing → Structure → OB → FVG 순차 실행
+  - [x] SMCAnalysis 결과 객체 생성
+- [x] 테스트: 전체 파이프라인 통합 테스트
+- [x] 테스트: 실제 시장 데이터 기반 검증 (fixtures)
 
 ### 2.4 Bias Engine
 

@@ -1,10 +1,4 @@
-import { Candle, StructureBreak, SwingPoint } from '../types';
-
-// 분석 결과 타입 - breaks 배열 + 최정 시장 방향
-export interface StructureResult {
-  breaks: StructureBreak[];
-  direction: 'BULLISH' | 'BEARISH' | undefined;
-}
+import { Candle, StructureBreak, StructureResult, SwingPoint } from '../types';
 
 /**
  * Swing Point 돌파를 감지하여 BOS/CHoCH를 판별

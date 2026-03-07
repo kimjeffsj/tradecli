@@ -1,9 +1,8 @@
 import { Command, Flags } from '@oclif/core';
 import { Timeframe } from '../core/types';
-import { MockDataAdapter } from '../core/data/adapters/mock';
-import { detectSwingPoints } from '../core/smc/swing';
-import { analyzeStructure } from '../core/smc/structure';
 import { writeFileSync } from 'node:fs';
+import { MockDataAdapter } from '../core/data/adapters/mock';
+import { SMCAnalyzer } from '../core/smc';
 
 export default class Analyze extends Command {
   // CLI에서 "trade analyze" 시 표시되는 설명
@@ -65,35 +64,48 @@ export default class Analyze extends Command {
       timeframe: flags.tf as Timeframe,
     });
 
-    // 4. Swing Detection
-    const swingPoints = detectSwingPoints(candles, flags.lookback);
+    // 4. SMC 통합 분석 (기존 swing+structure 수동 호출 -> 단일 파이프라인)
+    const analyzer = new SMCAnalyzer(flags.lookback);
+    const analysis = analyzer.analyze(candles);
 
-    // 5. Structure Analysis (BOS/CHoCH)
-    const structure = analyzeStructure(candles, swingPoints);
-
-    // 6. 결과 조합
+    // 5. 결과 조합 - OB/FVG 포함
     const result = {
       pair: flags.pair,
       timeframe: flags.tf,
       candleCount: candles.length,
-      swingPoints: swingPoints.map((sp) => ({
+      swingPoints: analysis.swingPoints.map((sp) => ({
         type: sp.type,
         price: sp.price,
         index: sp.index,
       })),
       structure: {
-        direction: structure.direction ?? 'UNDEFINED',
-        breaks: structure.breaks.map((b) => ({
+        direction: analysis.structure.direction ?? 'UNDEFINED',
+        breaks: analysis.structure.breaks.map((b) => ({
           type: b.type,
           direction: b.direction,
           brokenSwingPrice: b.brokenSwing.price,
           confirmedIndex: b.confirmedIndex,
         })),
       },
+      // OB 요약 - 상태별 개수 + 각 OB 핵심 정보
+      orderBlocks: analysis.orderBlocks.map((ob) => ({
+        direction: ob.direction,
+        high: ob.high,
+        low: ob.low,
+        status: ob.status,
+      })),
+      // FVG 요약 - fill 상태 포함
+      fairValueGaps: analysis.fairValueGaps.map((fvg) => ({
+        direction: fvg.direction,
+        high: fvg.high,
+        low: fvg.low,
+        status: fvg.status,
+        fillPercentage: fvg.fillPercentage,
+      })),
       analyzedAt: new Date().toISOString(),
     };
 
-    // 7. 출력
+    // 6. 출력
     if (flags.output) {
       writeFileSync(flags.output, JSON.stringify(result, null, 2));
       this.log(`Result saved to ${flags.output}`);

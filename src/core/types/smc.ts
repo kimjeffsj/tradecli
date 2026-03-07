@@ -55,3 +55,17 @@ export interface FairValueGap {
   // 갭이 메워진 비율 (0~1, 단조증가)
   fillPercentage: number;
 }
+
+// 분석 결과 타입 - breaks 배열 + 최종 시장 방향
+export interface StructureResult {
+  breaks: StructureBreak[];
+  direction: 'BULLISH' | 'BEARISH' | undefined;
+}
+
+// SMC 전체 파이프라인 결과 - SMC Analyzer의 반환 타입
+export interface SMCAnalysis {
+  swingPoints: SwingPoint[];
+  structure: StructureResult;
+  orderBlocks: OrderBlock[];
+  fairValueGaps: FairValueGap[];
+}
