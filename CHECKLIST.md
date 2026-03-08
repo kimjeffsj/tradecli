@@ -42,6 +42,12 @@
 | 2026-03-07 | 2.3   | barrel export (smc/index.ts)                             | ✅   |
 | 2026-03-07 | 2.3   | analyze 커맨드 SMCAnalyzer 전환 + OB/FVG 출력            | ✅   |
 | 2026-03-07 | 2.3   | tests/core/smc/analyzer.test.ts (3 tests passed)         | ✅   |
+| 2026-03-07 | 2.4   | BiasDirection, TimeframeBias, BiasResult, BiasEngineConfig 타입 추가 | ✅   |
+| 2026-03-07 | 2.4   | calculateBias() 순수 함수 (가중 합산 → Bias 결정)        | ✅   |
+| 2026-03-07 | 2.4   | BiasEngine 클래스 (async 오케스트레이터, DI)              | ✅   |
+| 2026-03-07 | 2.4   | barrel export (bias/index.ts)                             | ✅   |
+| 2026-03-07 | 2.4   | tests/core/bias/calculate-bias.test.ts (8 tests)          | ✅   |
+| 2026-03-07 | 2.4   | tests/core/bias/bias-engine.test.ts (3 tests)             | ✅   |
 
 ---
 
@@ -172,16 +178,16 @@
 
 ### 2.4 Bias Engine
 
-- [ ] MultiTimeframeBias 구현
-  - [ ] 타임프레임별 SMC 분석 실행
-  - [ ] 타임프레임별 가중치 적용 (D1: 0.5, H4: 0.3, H1: 0.2)
-  - [ ] 종합 Bias 계산 (LONG / SHORT / NEUTRAL)
-  - [ ] Confidence 점수 계산
-  - [ ] 가중치 커스터마이징 지원
-- [ ] 테스트: 전 타임프레임 동일 방향 → 높은 confidence
-- [ ] 테스트: 타임프레임 혼합 → 중간 confidence
-- [ ] 테스트: 전 타임프레임 반대 → NEUTRAL
-- [ ] 테스트: 커스텀 가중치 적용
+- [x] MultiTimeframeBias 구현
+  - [x] 타임프레임별 SMC 분석 실행
+  - [x] 타임프레임별 가중치 적용 (D1: 0.5, H4: 0.3, H1: 0.2)
+  - [x] 종합 Bias 계산 (LONG / SHORT / NEUTRAL)
+  - [x] Confidence 점수 계산
+  - [x] 가중치 커스터마이징 지원
+- [x] 테스트: 전 타임프레임 동일 방향 → 높은 confidence
+- [x] 테스트: 타임프레임 혼합 → 중간 confidence
+- [x] 테스트: 전 타임프레임 반대 → NEUTRAL
+- [x] 테스트: 커스텀 가중치 적용
 
 ### 2.5 JSON 리포트
 

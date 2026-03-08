@@ -12,10 +12,10 @@ describe('analyze command logic', () => {
 
   it('전체 파이프라인: fetch → swing → structure', async () => {
     // Given
-    const { MockDataAdapter } = await import('../../../src/core/data/adapters/mock.js');
-    const { createCandles } = await import('../../fixtures/helpers.js');
-    const { detectSwingPoints } = await import('../../../src/core/smc/swing.js');
-    const { analyzeStructure } = await import('../../../src/core/smc/structure.js');
+    const { MockDataAdapter } = await import('../../../src/core/data/adapters/mock');
+    const { createCandles } = await import('../../fixtures/helpers');
+    const { detectSwingPoints } = await import('../../../src/core/smc/swing');
+    const { analyzeStructure } = await import('../../../src/core/smc/structure');
 
     // 상승 → 하락 패턴 캔들
     const candles = createCandles([

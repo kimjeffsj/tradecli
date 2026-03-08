@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { SMCAnalyzer } from '../../../src/core/smc/analyzer.js';
-import { createCandle } from '../../fixtures/helpers.js';
-import { Candle } from '../../../src/core/types/index.js';
+import { SMCAnalyzer } from '../../../src/core/smc/analyzer';
+import { createCandle } from '../../fixtures/helpers';
+import { Candle } from '../../../src/core/types/index';
 
 describe('SMCAnalyzer', () => {
   // 편의 함수: OHLC를 직접 지정한 캔들 배열 생성

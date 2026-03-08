@@ -1,4 +1,4 @@
-import { Candle } from './candle';
+import { Candle, Timeframe } from './candle';
 
 export type SwingType = 'SWING_HIGH' | 'SWING_LOW';
 
@@ -68,4 +68,37 @@ export interface SMCAnalysis {
   structure: StructureResult;
   orderBlocks: OrderBlock[];
   fairValueGaps: FairValueGap[];
+}
+
+// 최종 Bias 방향 - LONG/SHORT 외에 확인 없으면 NEUTRAL
+export type BiasDirection = 'LONG' | 'SHORT' | 'NEUTRAL';
+
+// 타임프레임별 분석 결과 + 가중치 - calculateBias 입력용
+export interface TimeframeBias {
+  timeframe: Timeframe;
+  // StructureResult.direction 그대로 전달 - undefined는 판단 불가
+  direction: 'BULLISH' | 'BEARISH' | undefined;
+  weight: number;
+}
+
+export interface BiasResult {
+  pair: string;
+  bias: BiasDirection;
+  // [weightedScore] - 방향 무관 확신도 (0~1)
+  confidence: number;
+  // 합산 점수 (-1 ~ +1) - 디버깅용 원시값
+  weightedScore: number;
+  // 타임프레임별 상세 - 어느 Timeframe이 어떤 방향인지 확인
+  timeframes: TimeframeBias[];
+  // ISO8601 - 분석 시점 기록
+  timestamp: string;
+}
+
+export interface BiasEngineConfig {
+  // 타임프레임별 가중치 - 미지정 Timeframe은 분석 대상에서 제외
+  weights: Partial<Record<Timeframe, number>>;
+  // LONG/SHORT 판단 기준값 ( 기본: 0.2 ) - strict inequality
+  threshold?: number;
+  // SMCAnalyzer lookback (기본: 5)
+  lookback?: number;
 }
