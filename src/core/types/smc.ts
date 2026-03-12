@@ -96,7 +96,7 @@ export interface BiasResult {
 
 export interface BiasEngineConfig {
   // 타임프레임별 가중치 - 미지정 Timeframe은 분석 대상에서 제외
-  weights: Partial<Record<Timeframe, number>>;
+  weights?: Partial<Record<Timeframe, number>>;
   // LONG/SHORT 판단 기준값 ( 기본: 0.2 ) - strict inequality
   threshold?: number;
   // SMCAnalyzer lookback (기본: 5)

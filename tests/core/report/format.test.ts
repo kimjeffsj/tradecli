@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BiasReportJSON, SMCReportJSON } from '../../../src/core/report/serialize';
+import { formatBiasSummary, formatScanTable, formatSMCSummary } from '../../../src/core/report';
 
 // ANSI 이스케이프 코드 제거 — 텍스트 내용만 검증하기 위해
 function stripAnsi(str: string): string {
