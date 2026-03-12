@@ -3,6 +3,8 @@ import { Timeframe } from '../core/types';
 import { writeFileSync } from 'node:fs';
 import { MockDataAdapter } from '../core/data/adapters/mock';
 import { SMCAnalyzer } from '../core/smc';
+import { BiasEngine } from '../core/bias';
+import { formatBiasSummary, formatSMCSummary, serializeAnalysisReport } from '../core/report';
 
 export default class Analyze extends Command {
   // CLI에서 "trade analyze" 시 표시되는 설명
@@ -12,6 +14,7 @@ export default class Analyze extends Command {
   static override examples = [
     '<%= config.bin %> analyze --pair XAUUSD --tf H1',
     '<%= config.bin %> analyze --pair EURUSD --tf D1 --output result.json',
+    '<%= config.bin %> analyze --pair XAUUSD --tf H1 --bias --format table',
   ];
 
   // 플래그 정의
@@ -38,6 +41,19 @@ export default class Analyze extends Command {
       char: 'l',
       description: 'Swing detection lookback window',
       default: 5,
+    }),
+    // BiasEngine 실행 여부
+    bias: Flags.boolean({
+      char: 'b',
+      description: 'Include multi-timeframe bias analysis',
+      default: false,
+    }),
+    // 출력 포맷: json (기본) | table
+    format: Flags.string({
+      char: 'f',
+      description: 'Output format: json | table',
+      default: 'json',
+      options: ['json', 'table'],
     }),
   };
 
@@ -68,49 +84,33 @@ export default class Analyze extends Command {
     const analyzer = new SMCAnalyzer(flags.lookback);
     const analysis = analyzer.analyze(candles);
 
-    // 5. 결과 조합 - OB/FVG 포함
-    const result = {
-      pair: flags.pair,
-      timeframe: flags.tf,
-      candleCount: candles.length,
-      swingPoints: analysis.swingPoints.map((sp) => ({
-        type: sp.type,
-        price: sp.price,
-        index: sp.index,
-      })),
-      structure: {
-        direction: analysis.structure.direction ?? 'UNDEFINED',
-        breaks: analysis.structure.breaks.map((b) => ({
-          type: b.type,
-          direction: b.direction,
-          brokenSwingPrice: b.brokenSwing.price,
-          confirmedIndex: b.confirmedIndex,
-        })),
-      },
-      // OB 요약 - 상태별 개수 + 각 OB 핵심 정보
-      orderBlocks: analysis.orderBlocks.map((ob) => ({
-        direction: ob.direction,
-        high: ob.high,
-        low: ob.low,
-        status: ob.status,
-      })),
-      // FVG 요약 - fill 상태 포함
-      fairValueGaps: analysis.fairValueGaps.map((fvg) => ({
-        direction: fvg.direction,
-        high: fvg.high,
-        low: fvg.low,
-        status: fvg.status,
-        fillPercentage: fvg.fillPercentage,
-      })),
-      analyzedAt: new Date().toISOString(),
-    };
+    // 5. Bias 분석 (--bias 플래그)
+    let biasResult;
+    if (flags.bias) {
+      const biasEngine = new BiasEngine(adapter, { lookback: flags.lookback });
+      biasResult = await biasEngine.calculate(flags.pair);
+    }
 
-    // 6. 출력
+    // 6. 직렬화 — 인라인 매핑 대신 재사용 가능한 함수 사용
+    const meta = { pair: flags.pair, timeframe: flags.tf, candleCount: candles.length };
+    const report = serializeAnalysisReport(analysis, meta, biasResult);
+
+    // 7. 출력
     if (flags.output) {
-      writeFileSync(flags.output, JSON.stringify(result, null, 2));
+      // --output 시 항상 JSON 저장
+      writeFileSync(flags.output, JSON.stringify(report, null, 2));
       this.log(`Result saved to ${flags.output}`);
-    } else {
-      this.log(JSON.stringify(result, null, 2));
+    }
+
+    if (flags.format === 'table') {
+      // 테이블 포맷 출력
+      this.log(formatSMCSummary(report));
+      if (report.bias) {
+        this.log(formatBiasSummary(report.bias));
+      }
+    } else if (!flags.output) {
+      // JSON 포맷 (기본) — --output 없을 때만 stdout
+      this.log(JSON.stringify(report, null, 2));
     }
   }
 }
