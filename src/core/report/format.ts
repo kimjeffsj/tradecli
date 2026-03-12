@@ -89,8 +89,8 @@ export function formatScanTable(results: ScanRowData[]): string {
     [
       r.pair.padEnd(cols.pair),
       r.timeframe.padEnd(cols.tf),
-      colorByDirection(r.direction).padEnd(cols.dir),
-      colorByDirection(r.bias).padEnd(cols.bias),
+      colorByDirection(r.direction.padEnd(cols.dir)),
+      colorByDirection(r.bias.padEnd(cols.bias)),
       r.confidence.toFixed(2).padEnd(cols.conf),
     ].join(' | ')
   );

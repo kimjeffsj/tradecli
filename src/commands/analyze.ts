@@ -22,7 +22,7 @@ export default class Analyze extends Command {
     // 분석할 pair (필수)
     pair: Flags.string({
       char: 'p',
-      description: ' TRading pair (e.g. XAUUSD)',
+      description: 'Trading pair (e.g. XAUUSD)',
       required: true,
     }),
     // 타임 프레임 (필수)
@@ -62,7 +62,7 @@ export default class Analyze extends Command {
     const { flags } = await this.parse(Analyze);
 
     // 1. 타임프레임 유효성 검증
-    const validTf: Timeframe[] = ['H1', 'M5', 'M15', 'M30', 'H1', 'H4', 'D1', 'W1'];
+    const validTf: Timeframe[] = ['M1', 'M5', 'M15', 'M30', 'H1', 'H4', 'D1', 'W1'];
     if (!validTf.includes(flags.tf as Timeframe)) {
       this.error(`Invalid timeframe: ${flags.tf}. Valid: ${validTf.join(', ')}`);
     }

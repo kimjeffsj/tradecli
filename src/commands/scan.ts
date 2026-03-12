@@ -1,12 +1,13 @@
 import { Command, Flags } from '@oclif/core';
 import { Timeframe } from '../core/types';
-import { parsePairs } from '../core/report/parse-pairs';
+
 import { MockDataAdapter } from '../core/data/adapters/mock';
 import { SMCAnalyzer } from '../core/smc';
 import { BiasEngine } from '../core/bias';
 import {
   formatBiasSummary,
   formatScanTable,
+  parsePairs,
   ScanRowData,
   serializeAnalysisReport,
   serializeBiasResult,
@@ -25,7 +26,7 @@ export default class Scan extends Command {
   static override flags = {
     // 쉼표 구분 페어 목록 (필수)
     pairs: Flags.string({
-      description: `Comma-separated trading pairs(e.g. XAUUSD,EURUSD)`,
+      description: `Comma-separated trading pairs (e.g. XAUUSD,EURUSD)`,
       required: true,
     }),
     // SMC 분석 타임프레임

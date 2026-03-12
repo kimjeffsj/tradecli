@@ -21,23 +21,23 @@ export interface BacktestResult {
   strategyId: string;
   pair: string;
   // 총 트레이드 수
-  totlaTrades: number;
+  totalTrades: number;
   winRate: number; // 0~1
   profitFactor: number; // 총수익 / 총손실
   // 최대 낙폭 (%) - 리스크 지표
   maxDrawdown: number;
   sharpeRatio: number;
   sortinoRatio: number;
-  // Value at Rist (95% 신뢰구간)
+  // Value at Risk (95% 신뢰구간)
   var95: number;
   trades: Trade[];
   // 에쿼티 커브 [timestamp, equity] 쌍의 배열
-  equtiycurve: [number, number][];
+  equityCurve: [number, number][];
 }
 
 // 백테스트 실행 설정
-export interface Backtestconfig {
-  initialCapial: number;
+export interface BacktestConfig {
+  initialCapital: number;
   // 거래 수수료 (0.001 = 0.1%)
   commissionRate: number;
   // 슬리피지 (0.0005 = 0.05%)
